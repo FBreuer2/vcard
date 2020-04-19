@@ -36,9 +36,20 @@ type VCard struct {
 	Group   string
 	N       N
 	FN      string
+	Numbers []TEL
 }
 
 func (card *VCard) Equal(otherCard *VCard) bool {
+	if len(card.Numbers) != len(otherCard.Numbers) {
+		return false
+	}
+
+	for index, num := range card.Numbers {
+		if otherCard.Numbers[index].Equal(&num) == false {
+			return false
+		}
+	}
+
 	return card.Group == otherCard.Group &&
 		card.N.Equal(&otherCard.N) &&
 		card.FN == otherCard.FN
@@ -58,6 +69,16 @@ func (n *N) Equal(otherN *N) bool {
 		n.AdditionalNames == otherN.AdditionalNames &&
 		n.HonorificPrefixes == otherN.HonorificPrefixes &&
 		n.HonorificSuffixes == otherN.HonorificSuffixes
+}
+
+type TEL struct {
+	Attributes string
+	Number     string
+}
+
+func (tel *TEL) Equal(otherTel *TEL) bool {
+	return tel.Attributes == otherTel.Attributes &&
+		tel.Number == otherTel.Number
 }
 
 func splitVCardContent(data []byte, atEOF bool) (advance int, token []byte, err error) {

@@ -11,6 +11,16 @@ var wellformedVCARD = []struct {
 	entityString string
 	entity       vcard.VCardEntity
 }{
+	{"BEGIN:VCARD\r\nVERSION:2.1\r\nTEL;WORK;CELL:+123456789\r\nFN:Florian\r\n\t Breuer\r\nEND:VCARD\r\n", vcard.VCardEntity{
+		VCards: []*vcard.VCard{
+			{FN: "Florian Breuer", Numbers: []vcard.TEL{
+				{
+					Attributes: "WORK,CELL",
+					Number:     "+123456789",
+				},
+			}, Version: "2.1"},
+		},
+	}},
 	{"BEGIN:VCARD\r\nVERSION:2.1\r\nFN:Florian\r\n\t Breuer\r\nEND:VCARD\r\n", vcard.VCardEntity{
 		VCards: []*vcard.VCard{
 			{FN: "Florian Breuer", Version: "2.1"},

@@ -41,6 +41,10 @@ func vCard21Parse(scanner *bufio.Scanner) (*VCard, error) {
 }
 
 func handleLine(line string, currentCard *VCard) error {
+	if strings.HasPrefix(line, "TEL") {
+		return handleTEL(line, currentCard)
+	}
+
 	if strings.HasPrefix(line, "FN") {
 		return handleFN(line, currentCard)
 	}
@@ -53,6 +57,31 @@ func handleLine(line string, currentCard *VCard) error {
 		return handleKIND(line, currentCard)
 	}
 
+	return nil
+}
+
+func handleTEL(line string, currentCard *VCard) error {
+	// contentline  = TEL *(";" param) ":" value CRLF
+	splitLine := strings.Split(line, ":")
+	if len(splitLine) != 2 {
+		return errors.New("TEL line malformed.")
+	}
+
+	tel := TEL{
+		Number: splitLine[1],
+	}
+
+	// TEL;PREF;WORK;MSG;FAX
+	attributes := strings.Split(splitLine[0], ";")[1:]
+
+	attributeString := ""
+	for _, attr := range attributes {
+		attributeString += attr + ","
+	}
+
+	tel.Attributes = strings.TrimSuffix(attributeString, ",")
+
+	currentCard.Numbers = append(currentCard.Numbers, tel)
 	return nil
 }
 
