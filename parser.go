@@ -64,6 +64,7 @@ func splitVCardContent(data []byte, atEOF bool) (advance int, token []byte, err 
 	startIndex := 0
 
 	for {
+
 		newLineIndex := bytes.Index(data[startIndex:], []byte(NEW_LINE))
 
 		if newLineIndex == -1 {
@@ -71,20 +72,23 @@ func splitVCardContent(data []byte, atEOF bool) (advance int, token []byte, err 
 			return 0, nil, nil
 		}
 
-		if newLineIndex+3 > len(data) {
+		if startIndex+newLineIndex+3 > len(data) {
 			// Cannot determine if folding happened -> need more data
 			return 0, nil, nil
 		}
 
-		if bytes.Equal(data[newLineIndex+2:newLineIndex+3], []byte(FOLDING_SPACE)) == true ||
-			bytes.Equal(data[newLineIndex+2:newLineIndex+3], []byte(FOLDING_TAB)) == true {
+		if bytes.Equal(data[startIndex+newLineIndex+2:startIndex+newLineIndex+3], []byte(FOLDING_SPACE)) == true ||
+			bytes.Equal(data[startIndex+newLineIndex+2:startIndex+newLineIndex+3], []byte(FOLDING_TAB)) == true {
 			// Folded, line actually goes on
-			startIndex = newLineIndex + 3
+			startIndex += newLineIndex + 3
 			continue
 		}
 
+		clearTabs := bytes.ReplaceAll(data[:startIndex+newLineIndex], []byte("\r\n\t"), []byte(""))
+		clearSpaces := bytes.ReplaceAll(clearTabs, []byte("\r\n "), []byte(""))
+
 		// found a newline and it's not folded, so give out the line
-		return newLineIndex + 2, data[:newLineIndex], nil
+		return startIndex + newLineIndex + 2, clearSpaces, nil
 	}
 
 }
